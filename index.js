@@ -6,7 +6,7 @@ const { Client, Events, GatewayIntentBits, Collection } = require('discord.js');
 const { token } = require('./config.json');
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
 // When the client is ready, run this code (only once).
 // The distinction between `client: Client<boolean>` and `readyClient: Client<true>` is important for TypeScript developers.
@@ -44,6 +44,24 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+
+// player
+
+const { Player } = require('discord-player');
+const { DefaultExtractors } = require('@discord-player/extractor');
+ 
+// this is the entrypoint for discord-player based application
+const player = new Player(client);
+ 
+// Now, lets load all the default extractors
+await player.extractors.loadMulti(DefaultExtractors);
+
+
+// this event is emitted whenever discord-player starts to play a track
+player.events.on('playerStart', (queue, track) => {
+  // we will later define queue.metadata object while creating the queue
+  queue.metadata.channel.send(`Started playing **${track.title}**!`);
+});
 
 // Log in to Discord with your client's token
 client.login(token);
